@@ -18,8 +18,7 @@ public class Hero
         SetName(name);
         SetHp(hp);
         SetBaseStats(baseStats);
-        SetResistance(resistance);
-        SetWeakness(weakness);
+        SetResistanceAndWeakness(resistance, weakness);
         SetWeapon(weapon);
     }
 
@@ -49,15 +48,20 @@ public class Hero
     }
 
     public ELEMENT GetResistance() => _resistance;
-    public void SetResistance(ELEMENT resistance)
-    {
-        _resistance = resistance;
-    }
-
     public ELEMENT GetWeakness() => _weakness;
-    public void SetWeakness(ELEMENT weakness)
+    public void SetResistanceAndWeakness(ELEMENT resistance, ELEMENT weakness)  //In this "get" if you put the same weakness and resistance it sets them both to none
     {
-        _weakness = weakness;
+        if (resistance == weakness)
+        {
+            _resistance = ELEMENT.NONE;
+            _weakness = ELEMENT.NONE;
+            
+        }
+        else
+        {
+            _resistance = resistance;
+            _weakness = weakness;
+        }
     }
 
     public Weapon GetWeapon() => _weapon;

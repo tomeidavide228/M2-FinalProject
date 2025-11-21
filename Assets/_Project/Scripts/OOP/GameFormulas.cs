@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.ParticleSystem;
 
 public static class GameFormulas
 {
@@ -62,31 +63,27 @@ public static class GameFormulas
     }
     public static int CalculateDamage(Hero attacker, Hero defender)
     {
-        Stats attackerStats = new Stats();
-        Stats defenderStats = new Stats();
+
         int totDef;
         int damage;
         float multiplier;
 
-        attackerStats = Stats.Sum(attacker.GetBaseStats(), attacker.GetWeapon().GetBonusStats());
-        defenderStats = Stats.Sum(defender.GetBaseStats(), defender.GetWeapon().GetBonusStats());
-
         if (attacker.GetWeapon().GetDmgType() == DAMAGE_TYPE.PHYSICAL)
         {
-            totDef = defenderStats._def;
+            totDef = StatsSum(defender)._def;
         }
         else
         {
-            totDef = defenderStats._res;
+            totDef = StatsSum(defender)._res;
         }
 
-        damage = attackerStats._atk;
+        damage = StatsSum(attacker)._atk;
         damage -= totDef;
 
         multiplier = EvaluateElementalModifier(attacker.GetWeapon().GetElem(), defender);
         damage = (int)(damage * multiplier);
 
-        if (IsCrit(attackerStats._crt) == true)
+        if (IsCrit(StatsSum(attacker)._crt) == true)
         {
             damage *= 2;
         }
@@ -96,5 +93,38 @@ public static class GameFormulas
             return 0;
         }
         return damage;
+    }
+
+    public static Stats StatsSum(Hero hero) 
+    {
+        Stats stats;
+        stats = Stats.Sum(hero.GetBaseStats(), hero.GetWeapon().GetBonusStats());
+        return stats;
+    }
+
+    public static void Combat(Hero attacker, Hero defender)
+    {
+        int dmg;
+
+        Debug.Log($"{attacker.GetName()} attacks, {defender.GetName()} prepares to defend itself.");
+        if (HasHit(StatsSum(attacker), StatsSum(defender)))
+        {
+            if (HasElementAdvantage(attacker.GetWeapon().GetElem(), defender))
+            {
+                Debug.Log("WEAKNESS");
+            }
+            else if (HasElementDisadvantage(attacker.GetWeapon().GetElem(), defender))
+            {
+                Debug.Log("RESIST");
+            }
+
+            dmg = CalculateDamage(attacker, defender);
+            Debug.Log($"{attacker.GetName()} hit {defender.GetName()}, dealing {dmg} damage.");
+            defender.TakeDamage(dmg);
+        }
+        else
+        {
+            Debug.Log($"{attacker.GetName()} missed {defender.GetName()}");
+        }
     }
 }
